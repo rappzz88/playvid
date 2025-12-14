@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2AK Playvid</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .login-box {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 400px;
+        }
+        .login-box h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+        .login-box .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .error-msg {
+            color: #e74c3c;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .btn-login:hover { transform: translateY(-2px); }
+        .btn-login:disabled { opacity: 0.6; cursor: not-allowed; }
+        .app-container {
+            display: none;
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+        }
+        .header {
+            background: white;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header h2 { color: #667eea; font-size: 24px; }
+        .btn-logout, .btn-refresh {
+            padding: 8px 16px;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: 5px;
+        }
+        .btn-logout { background: #e74c3c; }
+        .btn-refresh { background: #667eea; }
+        .tabs {
+            display: flex;
+            background: white;
+            border-bottom: 1px solid #e0e0e0;
+            position: sticky;
+            top: 61px;
+            z-index: 99;
+        }
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        .tab.active {
+            border-bottom-color: #667eea;
+            color: #667eea;
+        }
+        .content { padding: 20px; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        .upload-form {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        .upload-form textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            resize: vertical;
+            min-height: 80px;
+            margin-bottom: 10px;
+        }
+        .upload-form input[type="file"] { margin-bottom: 10px; }
+        .btn-post {
+            width: 100%;
+            padding: 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .btn-post:disabled { opacity: 0.6; cursor: not-allowed; }
+        .post {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .post-header {
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .post-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        .post-info h4 { font-size: 14px; margin-bottom: 2px; }
+        .post-info span { font-size: 12px; color: #666; }
+        .post-media {
+            width: 100%;
+            max-height: 500px;
+            object-fit: cover;
+        }
+        .post-caption {
+            padding: 15px;
+            line-height: 1.5;
+        }
+        .post-actions {
+            padding: 10px 15px;
+            display: flex;
+            gap: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+        .action-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #666;
+            font-size: 14px;
+        }
+        .action-btn.liked { color: #e74c3c; }
+        .comments-section {
+            padding: 15px;
+            border-top: 1px solid #e0e0e0;
+            background: #f8f9fa;
+        }
+        .comment {
+            margin-bottom: 10px;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+        }
+        .comment strong { color: #667eea; font-size: 14px; }
+        .comment p { margin-top: 5px; font-size: 13px; }
+        .comment-input {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .comment-input input {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+        }
+        .comment-input button {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .profile-section {
+            text-align: center;
+            padding: 30px 20px;
+        }
+        .profile-avatar-large {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .profile-section h3 { margin-bottom: 5px; }
+        .profile-section p { color: #666; margin-bottom: 20px; }
+        .btn-edit-profile {
+            padding: 10px 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+        }
+        .modal-content h3 { margin-bottom: 20px; }
+        .modal-content input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .modal-actions button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .btn-cancel { background: #e0e0e0; }
+        .btn-save { background: #667eea; color: white; }
+    </style>
+</head>
+<body>
+    <div class="login-container" id="loginPage">
+        <div class="login-box">
+            <h1>2AK Playvid</h1>
+            <p class="subtitle">2 AL Khawarizmi</p>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>Nama Penuh</label>
+                    <input type="text" id="fullName" placeholder="Masukkan nama penuh anda" required>
+                    <div class="error-msg" id="nameError">Nama tidak berdaftar di kelas 2 AL Khawarizmi</div>
+                </div>
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="username" placeholder="Pilih username anda" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="password" placeholder="Masukkan password" required>
+                </div>
+                <button type="submit" class="btn-login" id="loginBtn">Masuk</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="app-container" id="mainApp">
+        <div class="header">
+            <h2>2AK Playvid</h2>
+            <div>
+                <button class="btn-refresh" onclick="loadPosts()">🔄</button>
+                <button class="btn-logout" onclick="logout()">Keluar</button>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('feed')">📱 Feed</div>
+            <div class="tab" onclick="switchTab('upload')">➕ Post</div>
+            <div class="tab" onclick="switchTab('profile')">👤 Profil</div>
+        </div>
+
+        <div class="content">
+            <div class="tab-content active" id="feedTab">
+                <div id="postsContainer"><div class="loading">Memuatkan posts...</div></div>
+            </div>
+            <div class="tab-content" id="uploadTab">
+                <div class="upload-form">
+                    <textarea id="postCaption" placeholder="Tulis caption..."></textarea>
+                    <input type="file" id="postMedia" accept="image/*,video/*">
+                    <button class="btn-post" onclick="createPost()" id="postBtn">Posting</button>
+                </div>
+            </div>
+            <div class="tab-content" id="profileTab">
+                <div class="profile-section">
+                    <div class="profile-avatar-large" id="profileAvatar"></div>
+                    <h3 id="profileName"></h3>
+                    <p id="profileUsername"></p>
+                    <button class="btn-edit-profile" onclick="openEditProfile()">Edit Profil</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="editProfileModal">
+        <div class="modal-content">
+            <h3>Edit Profil</h3>
+            <input type="text" id="editFullName" placeholder="Nama Penuh">
+            <input type="text" id="editUsername" placeholder="Username">
+            <input type="password" id="editPassword" placeholder="Password Baru">
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeEditProfile()">Batal</button>
+                <button class="btn-save" onclick="saveProfile()">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const names = ['Mohamad Rafiuddin','Mohamad Zaqwan','Mohamad eirfan','Haziq Iqbal','Aizam putera','Waliuddin','Sharif Aiman','Mohamad Farhan','Farisha Amira','Liana','Aqilah','Darwina','Qasrijah','Alaisha','Yunice','Nurifa','Ghazwani','Mia Maisara','Aliya','Ramadhania','Shaneeza','Shafira','Fateha','Amisah','Halimatul','Dayang','Ainul'];
+        let user = null;
+        let posts = [];
+
+        function isNameRegistered(n) {
+            const l = n.toLowerCase();
+            return names.some(rn => l.includes(rn.toLowerCase()));
+        }
+
+        async function loadCurrentUser() {
+            try {
+                const r = await window.storage.get('2ak-user');
+                if (r?.value) {
+                    user = JSON.parse(r.value);
+                    return true;
+                }
+            } catch(e) {}
+            return false;
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('loginBtn');
+            btn.disabled = true;
+            btn.textContent = 'Memuatkan...';
+            
+            const fn = document.getElementById('fullName').value;
+            const un = document.getElementById('username').value;
+            const pw = document.getElementById('password').value;
+
+            if (!isNameRegistered(fn)) {
+                document.getElementById('nameError').style.display = 'block';
+                btn.disabled = false;
+                btn.textContent = 'Masuk';
+                return;
+            }
+            document.getElementById('nameError').style.display = 'none';
+
+            try {
+                const uk = '2ak-u-' + un;
+                let exists = false;
+                try {
+                    const r = await window.storage.get(uk, true);
+                    if (r?.value) {
+                        const su = JSON.parse(r.value);
+                        if (su.password === pw) {
+                            user = su;
+                            exists = true;
+                        } else {
+                            alert('Password salah!');
+                            btn.disabled = false;
+                            btn.textContent = 'Masuk';
+                            return;
+                        }
+                    }
+                } catch(e) {}
+
+                if (!exists) {
+                    user = {fullName: fn, username: un, password: pw};
+                    await window.storage.set(uk, JSON.stringify(user), true);
+                }
+
+                await window.storage.set('2ak-user', JSON.stringify(user));
+                showMainApp();
+            } catch(err) {
+                alert('Ada masalah. Cuba lagi.');
+                btn.disabled = false;
+                btn.textContent = 'Masuk';
+            }
+        });
+
+        async function showMainApp() {
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('mainApp').style.display = 'block';
+            updateProfile();
+            await loadPosts();
+        }
+
+        function logout() {
+            user = null;
+            window.storage.delete('2ak-user');
+            document.getElementById('loginPage').style.display = 'flex';
+            document.getElementById('mainApp').style.display = 'none';
+            document.getElementById('loginForm').reset();
+        }
+
+        function switchTab(t) {
+            document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(x => x.classList.remove('active'));
+            const tabs = document.querySelectorAll('.tab');
+            const i = t === 'feed' ? 0 : t === 'upload' ? 1 : 2;
+            tabs[i].classList.add('active');
+            document.getElementById(t + 'Tab').classList.add('active');
+            if (t === 'feed') loadPosts();
+        }
+
+        function updateProfile() {
+            const i = user.fullName.charAt(0).toUpperCase();
+            document.getElementById('profileAvatar').textContent = i;
+            document.getElementById('profileName').textContent = user.fullName;
+            document.getElementById('profileUsername').textContent = '@' + user.username;
+        }
+
+        async function createPost() {
+            const cap = document.getElementById('postCaption').value;
+            const mf = document.getElementById('postMedia').files[0];
+            if (!cap && !mf) {
+                alert('Sila masukkan caption atau media!');
+                return;
+            }
+            const btn = document.getElementById('postBtn');
+            btn.disabled = true;
+            btn.textContent = 'Memuat naik...';
+
+            try {
+                if (mf) {
+                    const r = new FileReader();
+                    r.onload = async function(e) {
+                        const p = {
+                            id: Date.now(),
+                            username: user.username,
+                            fullName: user.fullName,
+                            caption: cap,
+                            media: e.target.result,
+                            mediaType: mf.type.startsWith('video') ? 'video' : 'image',
+                            timestamp: new Date().toISOString(),
+                            likes: [],
+                            comments: []
+                        };
+                        await window.storage.set('2ak-p-' + p.id, JSON.stringify(p), true);
+                        document.getElementById('postCaption').value = '';
+                        document.getElementById('postMedia').value = '';
+                        btn.disabled = false;
+                        btn.textContent = 'Posting';
+                        alert('Post berjaya!');
+                        switchTab('feed');
+                    };
+                    r.readAsDataURL(mf);
+                } else {
+                    const p = {
+                        id: Date.now(),
+                        username: user.username,
+                        fullName: user.fullName,
+                        caption: cap,
+                        media: null,
+                        timestamp: new Date().toISOString(),
+                        likes: [],
+                        comments: []
+                    };
+                    await window.storage.set('2ak-p-' + p.id, JSON.stringify(p), true);
+                    document.getElementById('postCaption').value = '';
+                    btn.disabled = false;
+                    btn.textContent = 'Posting';
+                    alert('Post berjaya!');
+                    switchTab('feed');
+                }
+            } catch(err) {
+                alert('Ada masalah. Cuba lagi.');
+                btn.disabled = false;
+                btn.textContent = 'Posting';
+            }
+        }
+
+        async function loadPosts() {
+            const c = document.getElementById('postsContainer');
+            c.innerHTML = '<div class="loading">Memuatkan posts...</div>';
+            try {
+                const r = await window.storage.list('2ak-p-', true);
+                if (!r?.keys || r.keys.length === 0) {
+                    c.innerHTML = '<p style="text-align:center;color:#666;padding:40px;">Belum ada post. Jadi yang pertama!</p>';
+                    return;
+                }
+                posts = [];
+                for (const k of r.keys) {
+                    try {
+                        const pr = await window.storage.get(k, true);
+                        if (pr?.value) posts.push(JSON.parse(pr.value));
+                    } catch(e) {}
+                }
+                posts.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+                renderPosts();
+            } catch(err) {
+                c.innerHTML = '<p style="text-align:center;color:#e74c3c;padding:40px;">Ada masalah. Tekan 🔄</p>';
+            }
+        }
+
+        function renderPosts() {
+            const c = document.getElementById('postsContainer');
+            c.innerHTML = '';
+            if (posts.length === 0) {
+                c.innerHTML = '<p style="text-align:center;color:#666;padding:40px;">Belum ada post. Jadi yang pertama!</p>';
+                return;
+            }
+            posts.forEach(p => {
+                const liked = p.likes.includes(user.username);
+                const i = p.fullName.charAt(0).toUpperCase();
+                c.innerHTML += `
+                    <div class="post">
+                        <div class="post-header">
+                            <div class="post-avatar">${i}</div>
+                            <div class="post-info">
+                                <h4>${p.fullName}</h4>
+                                <span>@${p.username} • ${formatTime(p.timestamp)}</span>
+                            </div>
+                        </div>
+                        ${p.media ? (p.mediaType === 'video' ? 
+                            `<video class="post-media" controls><source src="${p.media}"></video>` :
+                            `<img class="post-media" src="${p.media}">`) : ''}
+                        ${p.caption ? `<div class="post-caption">${p.caption}</div>` : ''}
+                        <div class="post-actions">
+                            <button class="action-btn ${liked?'liked':''}" onclick="toggleLike(${p.id})">
+                                ${liked?'❤️':'🤍'} ${p.likes.length}
+                            </button>
+                            <button class="action-btn" onclick="toggleComments(${p.id})">
+                                💬 ${p.comments.length}
+                            </button>
+                        </div>
+                        <div class="comments-section" id="comments-${p.id}" style="display:none;">
+                            <div>${p.comments.map(c => `
+                                <div class="comment">
+                                    <strong>@${c.username}</strong>
+                                    <p>${c.text}</p>
+                                </div>
+                            `).join('')}</div>
+                            <div class="comment-input">
+                                <input type="text" id="ci-${p.id}" placeholder="Tulis komen...">
+                                <button onclick="addComment(${p.id})">Hantar</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        async function toggleLike(id) {
+            const p = posts.find(x => x.id === id);
+            const i = p.likes.indexOf(user.username);
+            if (i > -1) p.likes.splice(i, 1);
+            else p.likes.push(user.username);
+            await window.storage.set('2ak-p-' + id, JSON.stringify(p), true);
+            renderPosts();
+        }
+
+        function toggleComments(id) {
+            const d = document.getElementById(`comments-${id}`);
+            d.style.display = d.style.display === 'none' ? 'block' : 'none';
+        }
+
+        async function addComment(id) {
+            const inp = document.getElementById(`ci-${id}`);
+            const txt = inp.value.trim();
+            if (!txt) return;
+            const p = posts.find(x => x.id === id);
+            p.comments.push({username: user.username, text: txt});
+            await window.storage.set('2ak-p-' + id, JSON.stringify(p), true);
+            inp.value = '';
+            await loadPosts();
+            toggleComments(id);
+        }
+
+        function formatTime(t) {
+            const diff = Math.floor((new Date() - new Date(t)) / 1000);
+            if (diff < 60) return 'Baru sahaja';
+            if (diff < 3600) return Math.floor(diff/60) + ' minit lalu';
+            if (diff < 86400) return Math.floor(diff/3600) + ' jam lalu';
+            return Math.floor(diff/86400) + ' hari lalu';
+        }
+
+        function openEditProfile() {
+            document.getElementById('editFullName').value = user.fullName;
+            document.getElementById('editUsername').value = user.username;
+            document.getElementById('editPassword').value = '';
+            document.getElementById('editProfileModal').style.display = 'flex';
+        }
+
+        function closeEditProfile() {
+            document.getElementById('editProfileModal').style.display = 'none';
+        }
+
+        async function saveProfile() {
+            const nfn = document.getElementById('editFullName').value;
+            const nun = document.getElementById('editUsername').value;
+            const npw = document.getElementById('editPassword').value;
+            if (!isNameRegistered(nfn)) {
+                alert('Nama tidak berdaftar');
+                return;
+            }
+            const old = user.username;
+            if (nun !== old) {
+                try {
+                    const r = await window.storage.get('2ak-u-' + nun, true);
+                    if (r?.value) {
+                        alert('Username sudah digunakan!');
+                        return;
+                    }
+                } catch(e) {}
+                await window.storage.delete('2ak-u-' + old, true);
+            }
+            user.fullName = nfn;
+            user.username = nun;
+            if (npw) user.password = npw;
+            await window.storage.set('2ak-u-' + nun, JSON.stringify(user), true);
+            await window.storage.set('2ak-user', JSON.stringify(user));
+            for (const p of posts) {
+                if (p.username === old) {
+                    p.username = nun;
+                    p.fullName = nfn;
+                    await window.storage.set('2ak-p-' + p.id, JSON.stringify(p), true);
+                }
+            }
+            updateProfile();
+            closeEditProfile();
+            await loadPosts();
+            alert('Profil berjaya dikemaskini!');
+        }
+
+        (async function() {
+            if (await loadCurrentUser()) showMainApp();
+        })();
+    </script>
+</body>
+</html>
